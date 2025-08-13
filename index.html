@@ -1,502 +1,526 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<title>정보보호·개인정보보호 — 그물형 업무 흐름도</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-  :root{
-    --bg:#0b0f14; --fg:#e8f0f7; --muted:#94a3b8; --accent:#60a5fa;
-    --group:#34d399; --mid:#a78bfa; --small:#f59e0b; --doc:#93c5fd;
-    --flow:#ff6b6b; --connection:#4ecdc4;
-  }
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--fg);
-       font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-       overflow:hidden}
-  header{position:absolute;left:16px;top:16px;z-index:8;background:rgba(15,23,42,.75);
-         backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,.2);
-         border-radius:14px;padding:10px 12px}
-  header h1{margin:0;font-size:16px}
-  header .hint{font-size:12px;color:var(--muted)}
-  .bar{position:absolute;left:16px;bottom:16px;z-index:8;display:flex;gap:10px;align-items:center;
-       background:rgba(15,23,42,.75);border:1px solid rgba(148,163,184,.2);
-       border-radius:14px;padding:8px 12px}
-  .bar input[type="text"]{background:transparent;border:0;outline:0;color:var(--fg);padding:6px;min-width:240px}
-  .bar label{font-size:12px;color:#cbd5e1;display:flex;align-items:center;gap:6px;white-space:nowrap}
-  .bar input[type="range"]{width:120px}
-  .bar select{background:transparent;border:1px solid rgba(148,163,184,.3);color:var(--fg);border-radius:8px;padding:4px 6px}
-  svg{width:100vw;height:100vh;display:block}
-  .link{stroke:rgba(148,163,184,.35);stroke-width:1.1;stroke-linecap:round}
-  .flow-link{stroke:var(--flow);stroke-width:2;stroke-linecap:round;opacity:0.7}
-  .cross-link{stroke:var(--connection);stroke-width:1.5;stroke-dasharray:5 5;opacity:0.6}
-  .node text{pointer-events:none;fill:#dbeafe;text-shadow:0 1px 2px rgba(0,0,0,.6);font-size:11px}
-  .node.group circle{fill:var(--group)} .node.mid circle{fill:var(--mid)}
-  .node.small circle{fill:var(--small)} .node.doc circle{fill:var(--doc)}
-  .node circle{stroke:rgba(255,255,255,.6);stroke-width:1px}
-  .node.group circle{r:30} .node.mid circle{r:22} .node.small circle{r:16} .node.doc circle{r:12}
-  .tooltip{position:absolute;z-index:9;pointer-events:none;transform:translate(-50%,-120%);
-           min-width:220px;max-width:360px;background:rgba(2,6,23,.92);color:#e2e8f0;
-           border:1px solid rgba(148,163,184,.25);border-radius:12px;padding:10px 12px;
-           box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .15s}
-  .tooltip .t-title{font-weight:700;font-size:13px;margin-bottom:4px}
-  .tooltip a{color:var(--accent);text-decoration:none;font-weight:600}
-  .panel{position:absolute;right:16px;top:16px;bottom:16px;width:360px;background:rgba(15,23,42,.75);
-         border:1px solid rgba(148,163,184,.2);border-radius:14px;padding:14px;overflow:auto;z-index:8}
-  .panel h2{font-size:16px;margin:0 0 8px}
-  .panel .meta{font-size:12px;color:var(--muted)}
-  .panel .open{display:inline-block;margin-top:10px;background:#1d4ed8;color:#fff;border:0;border-radius:10px;
-               padding:8px 10px;font-weight:700;cursor:pointer}
-  .dim{opacity:.15}
-  .pin{stroke:#fff;stroke-width:2px}
-  .flow-arrow{fill:var(--flow);opacity:0.8}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개인정보보호·정보보호 업무 네트워크 맵</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .control-btn.active {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .control-btn:not(.active) {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            padding: 12px 20px;
+            border: 2px solid #bdc3c7;
+            border-radius: 25px;
+            width: 300px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #3498db;
+        }
+
+        #network {
+            width: 100%;
+            height: 800px;
+            border: 2px solid #ecf0f1;
+            border-radius: 15px;
+            background: #fafbfc;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .area-label {
+            font-size: 18px;
+            font-weight: bold;
+            fill: #2c3e50;
+            text-anchor: middle;
+            pointer-events: none;
+        }
+
+        .node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .node:hover {
+            stroke-width: 3px;
+        }
+
+        .node-text {
+            font-size: 11px;
+            text-anchor: middle;
+            pointer-events: none;
+            fill: #2c3e50;
+            font-weight: 500;
+        }
+
+        .link {
+            stroke: #95a5a6;
+            stroke-width: 1.5;
+            stroke-opacity: 0.6;
+        }
+
+        .area-boundary {
+            fill: none;
+            stroke: #3498db;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            stroke-opacity: 0.7;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(44, 62, 80, 0.95);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            max-width: 200px;
+            z-index: 1000;
+        }
+
+        .legend {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #bdc3c7;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <h1>정보보호·개인정보보호 — 그물형 업무 흐름도</h1>
-    <div class="hint">휠 줌 · 드래그 이동 · 노드 드래그(핀) · 클릭→패널 · 검색(Enter)</div>
-  </header>
+    <div class="container">
+        <div class="header">
+            <h1>개인정보보호·정보보호 업무 네트워크</h1>
+            <p>영역별 업무 흐름과 연관관계를 시각화한 네트워크 맵</p>
+        </div>
 
-  <svg id="svg">
-    <defs>
-      <marker id="arrowhead" markerWidth="10" markerHeight="7" 
-              refX="9" refY="3.5" orient="auto">
-        <polygon points="0 0, 10 3.5, 0 7" class="flow-arrow" />
-      </marker>
-    </defs>
-    <g id="viewport">
-      <g id="linksFlow"></g>
-      <g id="linksCross"></g>
-      <g id="linksMain"></g>
-      <g id="nodes"></g>
-    </g>
-  </svg>
+        <div class="controls">
+            <button class="control-btn active" onclick="toggleArea('privacy')">개인정보보호</button>
+            <button class="control-btn" onclick="toggleArea('security')">정보보호</button>
+            <button class="control-btn" onclick="toggleConnections()">연결선 표시</button>
+            <button class="control-btn" onclick="resetView()">전체 보기</button>
+        </div>
 
-  <div id="tooltip" class="tooltip"></div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="업무나 문서명으로 검색..." onkeyup="searchNodes(this.value)">
+        </div>
 
-  <aside id="panel" class="panel">
-    <h2>업무 흐름 정보</h2>
-    <div class="meta">그래프에서 노드를 클릭하세요.</div>
-  </aside>
+        <div id="network"></div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span>법령·제도</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span>업무설계·방침</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span>분야별·특수</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3498db;"></div>
+                <span>데이터·기술</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #9b59b6;"></div>
+                <span>교육·홍보</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e67e22;"></div>
+                <span>인증·평가</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #34495e;"></div>
+                <span>사고대응</span>
+            </div>
+        </div>
+    </div>
 
-  <div class="bar">
-    <input id="q" type="text" placeholder="문서명 / 업무 단계 검색… (Enter)" />
-    <label><input id="flowToggle" type="checkbox" checked> 업무 흐름</label>
-    <label><input id="crossToggle" type="checkbox" checked> 교차 연결</label>
-    <label>흐름 강도 <input id="flowStrength" type="range" min="0" max="100" value="60"></label>
-    <button id="reheat">재정렬</button>
-  </div>
+    <div class="tooltip" id="tooltip"></div>
 
-<script>
-/* ========= 그물형 업무 흐름 데이터 ========= */
+    <script>
+        // 데이터 구조 정의
+        const privacyData = {
+            nodes: [
+                // 법령·제도 확인 (빨간색)
+                {id: "A", name: "법령·제도 확인", type: "category", area: "privacy", color: "#e74c3c", size: 25},
+                {id: "A1", name: "개인정보 보호 법령 및 지침·고시 해설", type: "document", area: "privacy", color: "#e74c3c", size: 15, category: "A"},
+                {id: "A2", name: "위치정보 보호법 해설", type: "document", area: "privacy", color: "#e74c3c", size: 15, category: "A"},
+                {id: "A3", name: "긴급상황 시 개인정보 처리 안내서", type: "document", area: "privacy", color: "#e74c3c", size: 15, category: "A"},
+                {id: "A4", name: "자동화된 결정 권리 안내서", type: "document", area: "privacy", color: "#e74c3c", size: 15, category: "A"},
 
-// 개인정보보호 업무 흐름 단계
-const privacyFlow = [
-  {id: "privacy_law", name: "법령·제도 확인", items: [
-    "개인정보 보호 법령 및 지침·고시 해설",
-    "위치정보 보호법 해설", 
-    "긴급상황 시 개인정보 처리 안내서",
-    "자동화된 결정 권리 안내서"
-  ]},
-  {id: "privacy_design", name: "업무 설계·처리방침 수립", items: [
-    "개인정보 처리 통합 안내서",
-    "개인정보 처리방침 작성 지침",
-    "홈페이지 개인정보 노출방지 안내서",
-    "마이데이터 전송 절차 및 기술 가이드라인",
-    "해외사업자 적용 안내서"
-  ]},
-  {id: "privacy_special", name: "분야별/특수 개인정보 처리", items: [
-    "아동·청소년 개인정보 보호 안내서",
-    "생체정보 보호 안내서",
-    "스마트도시 개인정보 보호 안내서",
-    "자기게시물 접근배제요청권 안내서",
-    "업종별 개인정보 처리 가이드"
-  ]},
-  {id: "privacy_tech", name: "데이터 처리·기술적 조치", items: [
-    "합성데이터 생성·활용 안내서",
-    "가명정보 처리 가이드라인",
-    "공공·교육·보건 분야 가명정보 안내서",
-    "AI·데이터 활용 안내서",
-    "개발자 대상 개인정보 보호조치 적용 안내서"
-  ]},
-  {id: "privacy_education", name: "교육·홍보", items: [
-    "개인정보 보호 교육 업무 안내서",
-    "소상공인을 위한 개인정보 보호 핸드북",
-    "개인정보 질의응답 모음집"
-  ]},
-  {id: "privacy_cert", name: "인증·평가", items: [
-    "개인정보 영향평가 수행 안내서",
-    "개인정보 영향평가 대가 산정 가이드",
-    "ISMS-P 인증기준 안내서"
-  ]},
-  {id: "privacy_incident", name: "사고 대응·취약점", items: [
-    "개인정보 유출 등 사고대응 매뉴얼",
-    "침해사고 분석절차 안내서"
-  ]}
-];
+                // 업무 설계·처리방침 (주황색)
+                {id: "B", name: "업무 설계·처리방침", type: "category", area: "privacy", color: "#f39c12", size: 25},
+                {id: "B1", name: "개인정보 처리 통합 안내서", type: "document", area: "privacy", color: "#f39c12", size: 15, category: "B"},
+                {id: "B2", name: "개인정보 처리방침 작성 지침", type: "document", area: "privacy", color: "#f39c12", size: 15, category: "B"},
+                {id: "B3", name: "홈페이지 개인정보 노출방지 안내서", type: "document", area: "privacy", color: "#f39c12", size: 15, category: "B"},
+                {id: "B4", name: "마이데이터 전송 절차 및 기술 가이드라인", type: "document", area: "privacy", color: "#f39c12", size: 15, category: "B"},
+                {id: "B5", name: "해외사업자 적용 안내서", type: "document", area: "privacy", color: "#f39c12", size: 15, category: "B"},
 
-// 정보보호 업무 흐름 단계
-const securityFlow = [
-  {id: "security_law", name: "법령·정책/제도 확인", items: [
-    "국가정보보안기본지침",
-    "국가망 보안체계 가이드라인",
-    "CISO 제도/운영 안내서"
-  ]},
-  {id: "security_tech", name: "기술·운영 지침", items: [
-    "개발보안·시큐어코딩·공급망 가이드",
-    "암호/암호모듈 가이드",
-    "제로트러스트 가이드라인 1.0·2.0",
-    "SIEM/SOAR 관제 기술 가이드",
-    "AI 활용 보안 가이드라인",
-    "취약점 점검/평가 지침"
-  ]},
-  {id: "security_finance", name: "금융·특수 도메인 적용", items: [
-    "금융분야 클라우드/오픈API/암호기술 가이드",
-    "금융보안 거버넌스 가이드",
-    "금융회사 경영자를 위한 정보보안 경영가이드",
-    "중소형 금융회사 IT 내부감사 가이드"
-  ]},
-  {id: "security_education", name: "교육·관리", items: [
-    "CISO 길라잡이(기본편/중급편)",
-    "정보보호 최고책임자 지정/신고 안내서"
-  ]},
-  {id: "security_incident", name: "사고 대응/보안관리", items: [
-    "주요 정보통신기반시설 취약점 분석 평가",
-    "금융회사 침해사고 준비도 가이드",
-    "모바일 대민서비스 보안 점검 가이드"
-  ]}
-];
+                // 분야별/특수 (초록색)
+                {id: "C", name: "분야별·특수 처리", type: "category", area: "privacy", color: "#27ae60", size: 25},
+                {id: "C1", name: "아동·청소년 개인정보 보호 안내서", type: "document", area: "privacy", color: "#27ae60", size: 15, category: "C"},
+                {id: "C2", name: "생체정보 보호 안내서", type: "document", area: "privacy", color: "#27ae60", size: 15, category: "C"},
+                {id: "C3", name: "스마트도시 개인정보 보호 안내서", type: "document", area: "privacy", color: "#27ae60", size: 15, category: "C"},
+                {id: "C4", name: "자기게시물 접근배제요청권 안내서", type: "document", area: "privacy", color: "#27ae60", size: 15, category: "C"},
+                {id: "C5", name: "업종별 개인정보 처리 가이드", type: "document", area: "privacy", color: "#27ae60", size: 15, category: "C"},
 
-/* ========= 노드 및 링크 생성 ========= */
-const nodes = [];
-const linksFlow = [];
-const linksCross = [];
-const linksMain = [];
-const pos = new Map();
+                // 데이터 처리·기술적 조치 (파란색)
+                {id: "D", name: "데이터·기술적 조치", type: "category", area: "privacy", color: "#3498db", size: 25},
+                {id: "D1", name: "합성데이터 생성·활용 안내서", type: "document", area: "privacy", color: "#3498db", size: 15, category: "D"},
+                {id: "D2", name: "가명정보 처리 가이드라인", type: "document", area: "privacy", color: "#3498db", size: 15, category: "D"},
+                {id: "D3", name: "공공·교육·보건 분야 가명정보 안내서", type: "document", area: "privacy", color: "#3498db", size: 15, category: "D"},
+                {id: "D4", name: "AI·데이터 활용 안내서", type: "document", area: "privacy", color: "#3498db", size: 15, category: "D"},
+                {id: "D5", name: "개발자 대상 개인정보 보호조치 적용 안내서", type: "document", area: "privacy", color: "#3498db", size: 15, category: "D"},
 
-const center = {x: window.innerWidth/2, y: window.innerHeight/2};
+                // 교육·홍보 (보라색)
+                {id: "E", name: "교육·홍보", type: "category", area: "privacy", color: "#9b59b6", size: 25},
+                {id: "E1", name: "개인정보 보호 교육 업무 안내서", type: "document", area: "privacy", color: "#9b59b6", size: 15, category: "E"},
+                {id: "E2", name: "소상공인을 위한 개인정보 보호 핸드북", type: "document", area: "privacy", color: "#9b59b6", size: 15, category: "E"},
+                {id: "E3", name: "개인정보 질의응답 모음집", type: "document", area: "privacy", color: "#9b59b6", size: 15, category: "E"},
 
-// 개인정보보호 그룹 노드
-addNode("개인정보보호", "group", "개인정보보호", {x: center.x - 400, y: center.y - 200});
+                // 인증·평가 (주황색 계열)
+                {id: "F", name: "인증·평가", type: "category", area: "privacy", color: "#e67e22", size: 25},
+                {id: "F1", name: "개인정보 영향평가 수행 안내서", type: "document", area: "privacy", color: "#e67e22", size: 15, category: "F"},
+                {id: "F2", name: "개인정보 영향평가 대가 산정 가이드", type: "document", area: "privacy", color: "#e67e22", size: 15, category: "F"},
+                {id: "F3", name: "ISMS-P 인증기준 안내서", type: "document", area: "privacy", color: "#e67e22", size: 15, category: "F"},
 
-// 정보보호 그룹 노드  
-addNode("정보보호", "group", "정보보호", {x: center.x + 400, y: center.y - 200});
+                // 사고 대응·취약점 (어두운 회색)
+                {id: "G", name: "사고 대응·취약점", type: "category", area: "privacy", color: "#34495e", size: 25},
+                {id: "G1", name: "개인정보 유출 등 사고대응 매뉴얼", type: "document", area: "privacy", color: "#34495e", size: 15, category: "G"},
+                {id: "G2", name: "침해사고 분석절차 안내서", type: "document", area: "privacy", color: "#34495e", size: 15, category: "G"},
 
-// 개인정보보호 흐름 노드들
-privacyFlow.forEach((stage, i) => {
-  const x = center.x - 400;
-  const y = center.y - 100 + i * 80;
-  addNode(stage.id, "mid", stage.name, {x, y});
-  addLinkMain("개인정보보호", stage.id);
-  
-  // 흐름 연결 (순차적)
-  if (i > 0) {
-    addLinkFlow(privacyFlow[i-1].id, stage.id);
-  }
-  
-  // 문서 노드들
-  stage.items.forEach((item, j) => {
-    const docId = stage.id + "_doc_" + j;
-    const docX = x + (j % 3 - 1) * 60;
-    const docY = y + 40 + Math.floor(j / 3) * 25;
-    addNode(docId, "doc", item, {x: docX, y: docY});
-    addLinkMain(stage.id, docId);
-  });
-});
+                // 정보보호 영역 (예시 - 실제 데이터로 교체 필요)
+                {id: "S1", name: "정보보안 정책", type: "category", area: "security", color: "#2c3e50", size: 25},
+                {id: "S1-1", name: "보안 정책 수립 가이드", type: "document", area: "security", color: "#2c3e50", size: 15, category: "S1"},
+                {id: "S1-2", name: "접근통제 정책", type: "document", area: "security", color: "#2c3e50", size: 15, category: "S1"},
+                
+                {id: "S2", name: "기술적 보안", type: "category", area: "security", color: "#16a085", size: 25},
+                {id: "S2-1", name: "암호화 가이드라인", type: "document", area: "security", color: "#16a085", size: 15, category: "S2"},
+                {id: "S2-2", name: "네트워크 보안 설정", type: "document", area: "security", color: "#16a085", size: 15, category: "S2"},
+            ],
+            links: [
+                // 개인정보보호 영역 내 연결
+                {source: "A", target: "A1"}, {source: "A", target: "A2"}, {source: "A", target: "A3"}, {source: "A", target: "A4"},
+                {source: "B", target: "B1"}, {source: "B", target: "B2"}, {source: "B", target: "B3"}, {source: "B", target: "B4"}, {source: "B", target: "B5"},
+                {source: "C", target: "C1"}, {source: "C", target: "C2"}, {source: "C", target: "C3"}, {source: "C", target: "C4"}, {source: "C", target: "C5"},
+                {source: "D", target: "D1"}, {source: "D", target: "D2"}, {source: "D", target: "D3"}, {source: "D", target: "D4"}, {source: "D", target: "D5"},
+                {source: "E", target: "E1"}, {source: "E", target: "E2"}, {source: "E", target: "E3"},
+                {source: "F", target: "F1"}, {source: "F", target: "F2"}, {source: "F", target: "F3"},
+                {source: "G", target: "G1"}, {source: "G", target: "G2"},
+                
+                // 카테고리 간 연결 (업무 흐름)
+                {source: "A", target: "B"}, {source: "B", target: "C"}, {source: "C", target: "D"}, 
+                {source: "D", target: "E"}, {source: "E", target: "F"}, {source: "F", target: "G"},
+                
+                // 교차 연결 (관련 업무)
+                {source: "D", target: "F"}, {source: "B", target: "G"}, {source: "C", target: "E"},
+                
+                // 정보보호 영역 내 연결
+                {source: "S1", target: "S1-1"}, {source: "S1", target: "S1-2"},
+                {source: "S2", target: "S2-1"}, {source: "S2", target: "S2-2"},
+                
+                // 영역 간 교차 연결
+                {source: "D", target: "S2"}, {source: "G", target: "S1"}, {source: "F3", target: "S1-1"}
+            ]
+        };
 
-// 정보보호 흐름 노드들
-securityFlow.forEach((stage, i) => {
-  const x = center.x + 400;
-  const y = center.y - 100 + i * 80;
-  addNode(stage.id, "mid", stage.name, {x, y});
-  addLinkMain("정보보호", stage.id);
-  
-  // 흐름 연결 (순차적)
-  if (i > 0) {
-    addLinkFlow(securityFlow[i-1].id, stage.id);
-  }
-  
-  // 문서 노드들
-  stage.items.forEach((item, j) => {
-    const docId = stage.id + "_doc_" + j;
-    const docX = x + (j % 3 - 1) * 60;
-    const docY = y + 40 + Math.floor(j / 3) * 25;
-    addNode(docId, "doc", item, {x: docX, y: docY});
-    addLinkMain(stage.id, docId);
-  });
-});
+        // SVG 설정
+        const width = document.getElementById('network').clientWidth;
+        const height = 800;
 
-// 교차 연결 (관련 업무 단계들 간)
-const crossConnections = [
-  ["privacy_tech", "security_tech"], // 기술적 조치
-  ["privacy_cert", "security_education"], // 인증/교육
-  ["privacy_incident", "security_incident"], // 사고 대응
-  ["privacy_education", "security_education"], // 교육
-];
+        const svg = d3.select("#network")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height);
 
-crossConnections.forEach(([a, b]) => {
-  addLinkCross(a, b);
-});
+        // 영역 정의
+        const areas = {
+            privacy: { x: width * 0.25, y: height * 0.5, width: width * 0.4, height: height * 0.8 },
+            security: { x: width * 0.75, y: height * 0.5, width: width * 0.4, height: height * 0.8 }
+        };
 
-function addNode(id, kind, label, position) {
-  const node = {id, kind, label};
-  nodes.push(node);
-  pos.set(id, position);
-  return node;
-}
+        // 영역 경계 그리기
+        const areaBoundaries = svg.selectAll(".area-boundary")
+            .data(Object.entries(areas))
+            .enter()
+            .append("rect")
+            .attr("class", "area-boundary")
+            .attr("x", d => d[1].x - d[1].width/2)
+            .attr("y", d => d[1].y - d[1].height/2)
+            .attr("width", d => d[1].width)
+            .attr("height", d => d[1].height)
+            .attr("rx", 20);
 
-function addLinkMain(source, target) {
-  linksMain.push({source, target});
-}
+        // 영역 라벨
+        svg.selectAll(".area-label")
+            .data([
+                {name: "개인정보보호", x: areas.privacy.x, y: areas.privacy.y - areas.privacy.height/2 + 30},
+                {name: "정보보호", x: areas.security.x, y: areas.security.y - areas.security.height/2 + 30}
+            ])
+            .enter()
+            .append("text")
+            .attr("class", "area-label")
+            .attr("x", d => d.x)
+            .attr("y", d => d.y)
+            .text(d => d.name);
 
-function addLinkFlow(source, target) {
-  linksFlow.push({source, target});
-}
+        // Force simulation 설정
+        const simulation = d3.forceSimulation(privacyData.nodes)
+            .force("link", d3.forceLink(privacyData.links).id(d => d.id).distance(80))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.size + 5))
+            .force("area", d3.forceX().x(d => areas[d.area].x).strength(0.3))
+            .force("areaY", d3.forceY().y(d => areas[d.area].y).strength(0.3));
 
-function addLinkCross(source, target) {
-  linksCross.push({source, target});
-}
+        // 링크 그리기
+        const link = svg.append("g")
+            .selectAll("line")
+            .data(privacyData.links)
+            .enter()
+            .append("line")
+            .attr("class", "link");
 
-/* ========= 렌더링 ========= */
-const svg = document.getElementById('svg');
-const viewport = document.getElementById('viewport');
-const gLinksFlow = document.getElementById('linksFlow');
-const gLinksCross = document.getElementById('linksCross');
-const gLinksMain = document.getElementById('linksMain');
-const gNodes = document.getElementById('nodes');
-const tooltip = document.getElementById('tooltip');
-const panel = document.getElementById('panel');
+        // 노드 그리기
+        const node = svg.append("g")
+            .selectAll("circle")
+            .data(privacyData.nodes)
+            .enter()
+            .append("circle")
+            .attr("class", "node")
+            .attr("r", d => d.size)
+            .attr("fill", d => d.color)
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 2)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended))
+            .on("mouseover", showTooltip)
+            .on("mouseout", hideTooltip);
 
-function createPath(p1, p2, className, withArrow = false) {
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('class', className);
-  path.setAttribute('d', `M${p1.x},${p1.y} L${p2.x},${p2.y}`);
-  if (withArrow) {
-    path.setAttribute('marker-end', 'url(#arrowhead)');
-  }
-  return path;
-}
+        // 노드 텍스트
+        const nodeText = svg.append("g")
+            .selectAll("text")
+            .data(privacyData.nodes)
+            .enter()
+            .append("text")
+            .attr("class", "node-text")
+            .text(d => d.name.length > 15 ? d.name.substring(0, 15) + "..." : d.name)
+            .attr("dy", d => d.size + 15);
 
-function createNodeElement(node) {
-  const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  g.setAttribute('class', `node ${node.kind}`);
-  g.setAttribute('data-id', node.id);
-  
-  const position = pos.get(node.id);
-  g.setAttribute('transform', `translate(${position.x},${position.y})`);
-  
-  const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-  const radius = node.kind === 'group' ? 30 : node.kind === 'mid' ? 22 : node.kind === 'small' ? 16 : 12;
-  circle.setAttribute('r', radius);
-  
-  const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-  text.setAttribute('y', radius + 16);
-  text.setAttribute('text-anchor', 'middle');
-  text.textContent = shortenText(node.label, node.kind === 'doc' ? 20 : 15);
-  
-  g.appendChild(circle);
-  g.appendChild(text);
-  
-  // 이벤트 리스너
-  g.addEventListener('mousemove', (e) => {
-    tooltip.style.left = e.pageX + 'px';
-    tooltip.style.top = e.pageY + 'px';
-    tooltip.style.opacity = 1;
-    tooltip.innerHTML = `<div class="t-title">${escapeHtml(node.label)}</div>`;
-    highlightNode(node.id, true);
-  });
-  
-  g.addEventListener('mouseleave', () => {
-    tooltip.style.opacity = 0;
-    highlightNode(node.id, false);
-  });
-  
-  g.addEventListener('click', () => {
-    panel.innerHTML = `<h2>${escapeHtml(node.label)}</h2><div class="meta">${getNodeTypeText(node.kind)}</div>`;
-    focusOnNode(node.id);
-  });
-  
-  return g;
-}
+        // 시뮬레이션 업데이트
+        simulation.on("tick", () => {
+            // 노드를 영역 내에 제한
+            privacyData.nodes.forEach(d => {
+                const area = areas[d.area];
+                d.x = Math.max(area.x - area.width/2 + d.size, Math.min(area.x + area.width/2 - d.size, d.x));
+                d.y = Math.max(area.y - area.height/2 + d.size, Math.min(area.y + area.height/2 - d.size, d.y));
+            });
 
-// 렌더링 실행
-function render() {
-  // 흐름 링크
-  gLinksFlow.innerHTML = '';
-  linksFlow.forEach(link => {
-    const p1 = pos.get(link.source);
-    const p2 = pos.get(link.target);
-    gLinksFlow.appendChild(createPath(p1, p2, 'flow-link', true));
-  });
-  
-  // 교차 링크
-  gLinksCross.innerHTML = '';
-  linksCross.forEach(link => {
-    const p1 = pos.get(link.source);
-    const p2 = pos.get(link.target);
-    gLinksCross.appendChild(createPath(p1, p2, 'cross-link'));
-  });
-  
-  // 메인 링크
-  gLinksMain.innerHTML = '';
-  linksMain.forEach(link => {
-    const p1 = pos.get(link.source);
-    const p2 = pos.get(link.target);
-    gLinksMain.appendChild(createPath(p1, p2, 'link'));
-  });
-  
-  // 노드
-  gNodes.innerHTML = '';
-  nodes.forEach(node => {
-    gNodes.appendChild(createNodeElement(node));
-  });
-}
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
 
-/* ========= 인터랙션 ========= */
-function highlightNode(nodeId, highlight) {
-  const connectedNodes = new Set([nodeId]);
-  
-  // 연결된 노드들 찾기
-  [...linksMain, ...linksFlow, ...linksCross].forEach(link => {
-    if (link.source === nodeId) connectedNodes.add(link.target);
-    if (link.target === nodeId) connectedNodes.add(link.source);
-  });
-  
-  // 노드 하이라이트
-  [...gNodes.children].forEach(g => {
-    const id = g.getAttribute('data-id');
-    g.classList.toggle('dim', highlight && !connectedNodes.has(id));
-  });
-  
-  // 링크 하이라이트
-  const highlightLink = (links, elements) => {
-    elements.forEach((element, i) => {
-      const link = links[i];
-      const isConnected = link.source === nodeId || link.target === nodeId;
-      element.style.opacity = highlight ? (isConnected ? 0.9 : 0.1) : '';
-    });
-  };
-  
-  highlightLink(linksFlow, [...gLinksFlow.children]);
-  highlightLink(linksCross, [...gLinksCross.children]);
-  highlightLink(linksMain, [...gLinksMain.children]);
-}
+            node
+                .attr("cx", d => d.x)
+                .attr("cy", d => d.y);
 
-function focusOnNode(nodeId) {
-  const position = pos.get(nodeId);
-  const scale = Math.min(2, Math.max(1.2, view.k));
-  const tx = window.innerWidth/2 - position.x * scale;
-  const ty = window.innerHeight/2 - position.y * scale;
-  view = {k: scale, tx, ty};
-  applyView();
-}
+            nodeText
+                .attr("x", d => d.x)
+                .attr("y", d => d.y);
+        });
 
-/* ========= 줌/팬 ========= */
-let view = {k: 1, tx: 0, ty: 0};
-function applyView() {
-  viewport.setAttribute('transform', `translate(${view.tx},${view.ty}) scale(${view.k})`);
-}
+        // 드래그 함수들
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
 
-let dragging = false, startX = 0, startY = 0, startTx = 0, startTy = 0;
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
 
-svg.addEventListener('mousedown', e => {
-  dragging = true;
-  startX = e.clientX;
-  startY = e.clientY;
-  startTx = view.tx;
-  startTy = view.ty;
-});
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
 
-window.addEventListener('mouseup', () => {
-  dragging = false;
-});
+        // 툴팁 함수들
+        function showTooltip(event, d) {
+            const tooltip = d3.select("#tooltip");
+            tooltip.style("opacity", 1)
+                .html(`<strong>${d.name}</strong><br/>영역: ${d.area === 'privacy' ? '개인정보보호' : '정보보호'}<br/>유형: ${d.type === 'category' ? '카테고리' : '문서'}`)
+                .style("left", (event.pageX + 10) + "px")
+                .style("top", (event.pageY - 10) + "px");
+        }
 
-window.addEventListener('mousemove', e => {
-  if (!dragging) return;
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  view.tx = startTx + dx;
-  view.ty = startTy + dy;
-  applyView();
-});
+        function hideTooltip() {
+            d3.select("#tooltip").style("opacity", 0);
+        }
 
-svg.addEventListener('wheel', e => {
-  e.preventDefault();
-  const x = e.offsetX, y = e.offsetY;
-  const newK = Math.max(0.5, Math.min(3, view.k * (e.deltaY > 0 ? 0.9 : 1.1)));
-  const cx = (x - view.tx) / view.k;
-  const cy = (y - view.ty) / view.k;
-  view.tx = x - cx * newK;
-  view.ty = y - cy * newK;
-  view.k = newK;
-  applyView();
-}, {passive: false});
+        // 컨트롤 함수들
+        let currentArea = 'privacy';
+        let showConnections = true;
 
-/* ========= 검색 ========= */
-const searchInput = document.getElementById('q');
-searchInput.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter') return;
-  
-  const query = searchInput.value.trim().toLowerCase();
-  const matchedNodes = new Set();
-  
-  nodes.forEach(node => {
-    if (node.label.toLowerCase().includes(query)) {
-      matchedNodes.add(node.id);
-    }
-  });
-  
-  // 검색 결과 하이라이트
-  [...gNodes.children].forEach(g => {
-    const id = g.getAttribute('data-id');
-    const node = nodes.find(n => n.id === id);
-    g.style.opacity = !query ? 1 : (matchedNodes.has(id) ? 1 : 0.2);
-  });
-});
+        function toggleArea(area) {
+            currentArea = area;
+            
+            // 버튼 상태 업데이트
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
 
-/* ========= 컨트롤 ========= */
-const flowToggle = document.getElementById('flowToggle');
-const crossToggle = document.getElementById('crossToggle');
-const reheatBtn = document.getElementById('reheat');
+            // 노드와 링크 필터링
+            node.style("opacity", d => d.area === area ? 1 : 0.1);
+            nodeText.style("opacity", d => d.area === area ? 1 : 0.1);
+            link.style("opacity", d => {
+                const sourceArea = privacyData.nodes.find(n => n.id === d.source.id)?.area;
+                const targetArea = privacyData.nodes.find(n => n.id === d.target.id)?.area;
+                return (sourceArea === area && targetArea === area) ? 0.6 : 0.1;
+            });
+        }
 
-flowToggle.addEventListener('change', () => {
-  gLinksFlow.style.display = flowToggle.checked ? 'block' : 'none';
-});
+        function toggleConnections() {
+            showConnections = !showConnections;
+            link.style("opacity", showConnections ? 0.6 : 0);
+            event.target.classList.toggle('active');
+        }
 
-crossToggle.addEventListener('change', () => {
-  gLinksCross.style.display = crossToggle.checked ? 'block' : 'none';
-});
+        function resetView() {
+            currentArea = null;
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            node.style("opacity", 1);
+            nodeText.style("opacity", 1);
+            link.style("opacity", 0.6);
+        }
 
-reheatBtn.addEventListener('click', () => {
-  // 위치 재설정 로직
-  render();
-});
+        function searchNodes(query) {
+            if (!query) {
+                node.style("opacity", 1);
+                nodeText.style("opacity", 1);
+                return;
+            }
 
-/* ========= 유틸리티 함수 ========= */
-function shortenText(text, maxLength) {
-  return text.length > maxLength ? text.slice(0, maxLength - 1) + '…' : text;
-}
+            const lowerQuery = query.toLowerCase();
+            node.style("opacity", d => 
+                d.name.toLowerCase().includes(lowerQuery) ? 1 : 0.2
+            );
+            nodeText.style("opacity", d => 
+                d.name.toLowerCase().includes(lowerQuery) ? 1 : 0.2
+            );
+        }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
-function getNodeTypeText(kind) {
-  const types = {
-    group: '대분류',
-    mid: '업무 단계',
-    small: '세부 분류',
-    doc: '문서'
-  };
-  return types[kind] || '노드';
-}
-
-// 초기 렌더링
-render();
-
-</script>
+        // 초기 상태: 개인정보보호 영역만 표시
+        toggleArea('privacy');
+    </script>
 </body>
 </html>
