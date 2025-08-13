@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>정보보호·개인정보보호 마인드맵</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="정보보호 및 개인정보보호 관련 82개 문서를 시각화한 인터랙티브 마인드맵" />
+<meta name="keywords" content="정보보호, 개인정보보호, 마인드맵, 가이드라인, 보안" />
+<meta name="author" content="정보보호·개인정보보호 마인드맵" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="정보보호·개인정보보호 마인드맵" />
+<meta property="og:description" content="정보보호 및 개인정보보호 관련 82개 문서를 시각화한 인터랙티브 마인드맵" />
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:title" content="정보보호·개인정보보호 마인드맵" />
+<meta property="twitter:description" content="정보보호 및 개인정보보호 관련 82개 문서를 시각화한 인터랙티브 마인드맵" />
+
+<style>
+  :root{
+    --bg:#0b0f14; --fg:#e8f0f7; --muted:#94a3b8; --accent:#60a5fa;
+    --group:#34d399; --mid:#a78bfa; --small:#f59e0b; --doc:#93c5fd;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);
+       font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+       overflow:hidden}
+  header{position:absolute;left:16px;top:16px;z-index:8;background:rgba(15,23,42,.75);
+         backdrop-filter:blur(6px);border:1px solid rgba(148,163,184,.2);
+         border-radius:14px;padding:10px 12px;max-width:calc(100vw - 400px)}
+  header h1{margin:0;font-size:16px;line-height:1.4}
+  header .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.3}
+  .bar{position:absolute;left:16px;bottom:16px;z-index:8;display:flex;gap:10px;align-items:center;
+       background:rgba(15,23,42,.75);border:1px solid rgba(148,163,184,.2);
+       border-radius:14px;padding:8px 12px;flex-wrap:wrap;max-width:calc(100vw - 32px)}
+  .bar input[type="text"]{background:transparent;border:0;outline:0;color:var(--fg);padding:6px;min-width:200px;flex:1}
+  .bar label{font-size:12px;color:#cbd5e1;display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .bar input[type="range"]{width:100px}
+  .bar select{background:transparent;border:1px solid rgba(148,163,184,.3);color:var(--fg);border-radius:8px;padding:4px 6px}
+  .bar button{background:#1d4ed8;color:#fff;border:0;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+  .bar button:hover{background:#1e40af}
+  svg{width:100vw;height:100vh;display:block}
+  .link{stroke:rgba(148,163,184,.35);stroke-width:1.1;stroke-linecap:round}
+  .aux{stroke:rgba(96,165,250,.28);stroke-width:.9;stroke-dasharray:3 3}
+  .node text{pointer-events:none;fill:#dbeafe;text-shadow:0 1px 2px rgba(0,0,0,.6);font-size:11px}
+  .node.group circle{fill:var(--group)} .node.mid circle{fill:var(--mid)}
+  .node.small circle{fill:var(--small)} .node.doc circle{fill:var(--doc)}
+  .node circle{stroke:rgba(255,255,255,.6);stroke-width:1px;cursor:pointer}
+  .node.group circle{r:26} .node.mid circle{r:20} .node.small circle{r:14} .node.doc circle{r:10}
+  .tooltip{position:absolute;z-index:9;pointer-events:none;transform:translate(-50%,-120%);
+           min-width:220px;max-width:360px;background:rgba(2,6,23,.92);color:#e2e8f0;
+           border:1px solid rgba(148,163,184,.25);border-radius:12px;padding:10px 12px;
+           box-shadow:0 10px 30px rgba(0,0,0,.35);opacity:0;transition:opacity .15s}
+  .tooltip .t-title{font-weight:700;font-size:13px;margin-bottom:4px;line-height:1.3}
+  .tooltip a{color:var(--accent);text-decoration:none;font-weight:600}
+  .tooltip a:hover{text-decoration:underline}
+  .panel{position:absolute;right:16px;top:16px;bottom:16px;width:360px;background:rgba(15,23,42,.75);
+         border:1px solid rgba(148,163,184,.2);border-radius:14px;padding:14px;overflow:auto;z-index:8}
+  .panel h2{font-size:16px;margin:0 0 8px;line-height:1.4}
+  .panel .meta{font-size:12px;color:var(--muted);line-height:1.4}
+  .panel .open{display:inline-block;margin-top:10px;background:#1d4ed8;color:#fff;border:0;border-radius:10px;
+               padding:8px 12px;font-weight:700;cursor:pointer;text-decoration:none}
+  .panel .open:hover{background:#1e40af}
+  .panel .warning{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);
+                  border-radius:8px;padding:8px;margin-top:8px;font-size:12px;color:#fbbf24}
+  .dim{opacity:.15}
+  .pin{stroke:#fff;stroke-width:2px}
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    header{max-width:calc(100vw - 32px);font-size:14px}
+    header h1{font-size:14px}
+    header .hint{font-size:11px}
+    .panel{width:280px;right:8px;top:8px;bottom:8px;padding:10px}
+    .bar{left:8px;bottom:8px;gap:6px;padding:6px 8px}
+    .bar input[type="text"]{min-width:120px;font-size:14px}
+    .bar label{font-size:11px}
+    .bar input[type="range"]{width:80px}
+    .tooltip{min-width:180px;max-width:280px;font-size:12px}
+  }
+  
+  @media (max-width: 480px) {
+    .panel{display:none} /* 모바일에서는 패널 숨김 */
+    header{max-width:calc(100vw - 32px)}
+    .bar{flex-direction:column;align-items:stretch;gap:4px}
+    .bar input[type="text"]{min-width:auto}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>정보보호·개인정보보호 마인드맵</h1>
+    <div class="hint">휠 줌 · 드래그 이동 · 노드 드래그(핀) · 클릭→패널 · 검색(Enter)</div>
+  </header>
+
+  <svg id="svg">
+    <g id="viewport">
+      <g id="linksMain"></g>
+      <g id="linksAux"></g>
+      <g id="nodes"></g>
+    </g>
+  </svg>
+
+  <div id="tooltip" class="tooltip"></div>
+
+  <aside id="panel" class="panel">
+    <h2>문서 정보</h2>
+    <div class="meta">그래프에서 문서를 클릭하세요.</div>
+  </aside>
+
+  <div class="bar">
+    <input id="q" type="text" placeholder="문서명 / 중분류 / 소분류 검색… (Enter)" />
+    <label><input id="forceToggle" type="checkbox" checked> 유기적 레이아웃</label>
+    <label>강도 <input id="forceStrength" type="range" min="0" max="100" value="50"></label>
+    <label><input id="auxToggle" type="checkbox" checked> 보조 링크</label>
+    <label>보조 강도 <input id="auxStrength" type="range" min="0" max="100" value="35"></label>
+    <label>보조 수
+      <select id="auxCount">
+        <option value="0">0</option><option value="1">1</option>
+        <option value="2" selected>2</option><option value="3">3</option><option value="4">4</option>
+      </select>
+    </label>
+    <button id="reheat">재정렬</button>
+  </div>
+
+<script>
+/* ========= 데이터(82건) =========
+   big(대분류), mid(중분류), small(소분류; 일부 없음), title, no
+   *개인정보보호 ▸ 분야별 보호·안내 = 소분류 없이 바로 문서 연결(유지)
+*/
+var D=[]; function add(no,big,mid,small,title){ 
+  // GitHub Pages에서는 실제 PDF 파일이 없으므로 외부 링크나 정보 제공
+  const url = `https://privacy.go.kr/a3sc/per/inf/perInfStep.do?menuNo=040301`; // 개인정보보호위원회 자료실
+  D.push({no:no,big:big,mid:mid,small:small,title:title,url:url}); 
+}
+
+// --- 개인정보보호 (1~40, 43) ---
+add(1,"개인정보보호","법령·제도 해설","법령·지침·고시 해설","개인정보 보호 법령 및 지침·고시 해설");
+add(2,"개인정보보호","통합·포괄 안내","종합 안내서","개인정보 처리 통합 안내서");
+add(3,"개인정보보호","법령·제도 해설","특례·예외(긴급상황)","긴급상황 시 개인정보 처리 안내서");
+add(4,"개인정보보호","분야별 보호·안내","","아동·청소년 개인정보 보호 안내서");
+add(5,"개인정보보호","운영·관리","권리행사·차단(자기게시물)","인터넷 자기게시물 접근배제요청권 안내서");
+add(6,"개인정보보호","법령·제도 해설","권리(자동화된 결정)","자동화된 결정에 대한 정보주체의 권리 안내서");
+add(7,"개인정보보호","분야별 보호·안내","","분야별 개인정보 보호 안내서 / 관계부처합동");
+add(8,"개인정보보호","사고 대응·취약점","안전성 확보·보호조치","개인정보의 안전성 확보조치 기준 안내서");
+add(9,"개인정보보호","사고 대응·취약점","안전성 확보·보호조치","개발자 대상 개인정보 보호조치 적용 안내서");
+add(10,"개인정보보호","분야별 보호·안내","","생체정보 보호 안내서");
+add(11,"개인정보보호","영상정보처리기기","고정형","고정형 영상정보처리기기 설치·운영 안내서");
+add(12,"개인정보보호","영상정보처리기기","이동형","이동형 영상정보처리기기 안내서");
+add(13,"개인정보보호","분야별 보호·안내","","스마트도시 개인정보 보호 안내서");
+add(14,"개인정보보호","기술·데이터 처리","합성데이터","합성데이터 생성·활용 안내서");
+add(15,"개인정보보호","기술·데이터 처리","가명·익명정보","가명정보 처리 가이드라인");
+add(16,"개인정보보호","기술·데이터 처리","가명·익명정보","공공분야 가명정보 제공 실무 안내서 / 부처합동(행안부)");
+add(17,"개인정보보호","기술·데이터 처리","가명·익명정보","교육분야 가명·익명정보 처리 가이드라인 / 부처합동(교육부)");
+add(18,"개인정보보호","기술·데이터 처리","가명·익명정보","보건의료 데이터 활용 가이드라인 / 부처합동(복지부)");
+add(19,"개인정보보호","기술·데이터 처리","합성데이터","합성데이터 생성 참조모델");
+add(20,"개인정보보호","기술·데이터 처리","AI·데이터 활용","AI 개발·서비스를 위한 공개된 개인정보 처리 안내서");
+add(21,"개인정보보호","기술·데이터 처리","AI·데이터 활용","안전한 인공지능(AI)·데이터 활용을 위한 AI 프라이버시 리스크 관리 모델");
+add(22,"개인정보보호","자율규제·참여","업종별 가이드","자율규제단체 참여사를 위한 업종별 개인정보 처리 가이드");
+add(23,"개인정보보호","교육·홍보","교육 안내서","소상공인을 위한 개인정보 보호 핸드북");
+add(24,"개인정보보호","운영·관리","처리방침·노출 방지","개인정보 처리방침 작성 지침");
+add(25,"개인정보보호","인증·평가","영향평가","개인정보 영향평가 수행안내서");
+add(26,"개인정보보호","인증·평가","영향평가","개인정보 영향평가 대가 산정가이드");
+add(27,"개인정보보호","인증·평가","인증·관리체계","정보보호 및 개인정보보호 관리체계(ISMS-P)인증기준 안내서 / 부처합동(과기부)");
+add(28,"개인정보보호","교육·홍보","교육 안내서","개인정보 보호 교육 업무 안내서");
+add(29,"개인정보보호","운영·관리","처리방침·노출 방지","홈페이지 개인정보 노출방지 안내서");
+add(30,"개인정보보호","사고 대응·취약점","사고 대응 매뉴얼","개인정보 유출 등 사고대응 매뉴얼");
+add(31,"개인정보보호","운영·관리","해외·특수","해외사업자의 개인정보 보호법 적용 안내서");
+add(32,"개인정보보호","제도 안내","","개인정보 손해배상책임 보장제도 안내서");
+add(33,"개인정보보호","교육·홍보","질의응답·홍보","개인정보 질의응답 모음집");
+add(34,"개인정보보호","제도 안내","","개인정보 전송요구권 제도 안내서");
+add(35,"개인정보보호","제도 안내","","개인정보관리 전문기관 지정안내서(일반전문기관 편)");
+add(36,"개인정보보호","제도 안내","","개인정보관리 전문기관 지정안내서(특수전문기관 편)");
+add(37,"개인정보보호","제도 안내","","개인정보관리 전문기관 지정안내서(중계전문기관 편)");
+add(38,"개인정보보호","제도 안내","","일반수신자 등재 안내서");
+add(39,"개인정보보호","운영·관리","마이데이터","전 분야 마이데이터 전송 절차 및 기술 가이드라인");
+add(40,"개인정보보호","법령·제도 해설","법령·지침·고시 해설","위치정보의 보호 및 이용 등에 관한 법률 해설서");
+add(43,"개인정보보호","사고 대응·취약점","사고 대응 매뉴얼","침해사고 분석절차 안내서");
+
+// --- 정보보호 (41~82, 43 제외) ---
+add(41,"정보보호","기술·운영","암호/암호모듈","블록체인 암호기술 가이드라인");
+add(42,"정보보호","기술·운영","취약점/평가","모바일 대민서비스 보안취약점 점검 가이드");
+add(44,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","공개SW를 활용한 소프트웨어 개발보안 검증가이드");
+add(45,"정보보호","기술·운영","취약점/평가","주요정보통신기반시설 기술적 취약점 분석 평가 상세 가이드");
+add(46,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","모바일 전자정부서비스 앱 소스코드 검증 가이드라인");
+add(47,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","소프트웨어 개발 보안 가이드");
+add(48,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","소프트웨어 보안약점 진단가이드");
+add(49,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","Python 시큐어코딩 가이드");
+add(50,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","JavaScript 시큐어코딩 가이드");
+add(51,"정보보호","기술·운영","제로트러스트/접근","제로트러스트 가이드라인 1.0 (요약서, 전체본)");
+add(52,"정보보호","기술·운영","개발보안·시큐어코딩·공급망","SW 공급망 보안 가이드 라인 1.0 (전체본, 요약본)");
+add(53,"정보보호","기술·운영","제로트러스트/접근","제로트러스트 가이드라인 2.0");
+add(54,"정보보호","금융","제도·컴플라이언스","금융분야 클라우드컴퓨팅서비스 이용 가이드");
+add(55,"정보보호","정책·제도","망분리 예외(규정/운영 해설)","연구·개발 목적의 망분리 예외 적용에 따른 보안 해설서");
+add(56,"정보보호","금융","제도·컴플라이언스","금융분야 상용 클라우드서비스 보안 관리 참고서");
+add(57,"정보보호","정책·제도","망분리 예외(규정/운영 해설)","연구·개발 목적의 망분리 예외 적용에 따른 보안 유의사항");
+add(58,"정보보호","금융","기술·운영","금융분야 오픈소스 소프트웨어 활용·관리 안내서");
+add(59,"정보보호","금융","기술·운영","금융회사 재택근부 보안 안내서");
+add(60,"정보보호","금융","운영·거버넌스","금융보안 거버넌스 가이드");
+add(61,"정보보호","금융","기술·운영","금융부문 암호기술 활용가이드");
+add(62,"정보보호","금융","기술·운영","금융권 오픈API 이용기관 자체 보안점검 가이드");
+add(63,"정보보호","금융","기술·운영","금융회사 자체 보안성심의 가이드");
+add(64,"정보보호","금융","기술·운영","금융회사 침해사고 준비도 가이드");
+add(65,"정보보호","금융","기술·운영","금융권 모바일 오피스 보안 가이드");
+add(66,"정보보호","금융","운영·거버넌스","중소형 금융회사 IT 내부감사 가이드");
+add(67,"정보보호","금융","제도·컴플라이언스","금융IT 보안 컴플라이언스 가이드");
+add(68,"정보보호","금융","운영·거버넌스","금융회사 경영자를 위한 정보보안 경영가이드");
+add(69,"정보보호","정책·제도","CISO 제도/운영","정보보호 최고책임자(CISO) 지정·신고 제도 안내서");
+add(70,"정보보호","정책·제도","CISO 제도/운영","정보보호최고책임자제도 겸직금지 대상기업 가이드라인");
+add(71,"정보보호","정책·제도","CISO 제도/운영","CISO(정보보호 최고책임자) 길라잡이 - 중급편");
+add(72,"정보보호","정책·제도","CISO 제도/운영","CISO(정보보호 최고책임자) 길라잡이 - 기본편");
+add(73,"정보보호","공공","정책·지침","국가 망 보안체계 보안 가이드라인(Draft)");
+add(74,"정보보호","기술·운영","관제·SIEM/SOAR","관제기술 플랫폼(SIEM/SOAR) 구축 가이드라인");
+add(75,"정보보호","의료","병원정보시스템","병원정보시스템 보안가이드라인");
+add(76,"정보보호","기술·운영","AI 보안","챗GPT 등 생성형 AI 활용 보안 가이드라인");
+add(77,"정보보호","공공","정책·지침","국가 클라우드 컴퓨팅 보안 가이드라인");
+add(78,"정보보호","공공","암호/암호모듈","암호모듈 구현안내서");
+add(79,"정보보호","공공","암호/암호모듈","검증필 암호모듈 운용가이드");
+add(80,"정보보호","공공","블록체인 정책","국가ㆍ공공기관 도입을 위한 블록체인 암호기술 가이드라인");
+add(81,"정보보호","공공","정책·지침","국가정보보안기본지침");
+add(82,"정보보호","공공","암호/암호모듈","암호모듈 시험 및 검증지침");
+
+/* ========= 계층 ========= */
+function isFlattened(g,m){ return (g==='개인정보보호' && m==='분야별 보호·안내'); }
+var groups = Array.from(new Set(D.map(x=>x.big)));
+var midsByGroup = new Map();
+groups.forEach(g=>{ midsByGroup.set(g, Array.from(new Set(D.filter(x=>x.big===g).map(x=>x.mid)))); });
+var smallsByMid = new Map();
+midsByGroup.forEach((mids,g)=>{
+  mids.forEach(m=>{
+    const smalls = Array.from(new Set(D.filter(x=>x.big===g && x.mid===m && x.small).map(x=>x.small)));
+    smallsByMid.set(g+'::'+m, smalls);
+  });
+});
+
+/* ========= 초기 배치(방사형) ========= */
+const svg=document.getElementById('svg');
+const viewport=document.getElementById('viewport');
+const gLinksMain=document.getElementById('linksMain');
+const gLinksAux=document.getElementById('linksAux');
+const gNodes=document.getElementById('nodes');
+const tooltip=document.getElementById('tooltip');
+const panel=document.getElementById('panel');
+
+const center={x:window.innerWidth/2, y:window.innerHeight/2};
+const R={group:140, mid:280, small:420, doc:560};
+const anchorAngle = new Map([['개인정보보호',-Math.PI/2],['정보보호',Math.PI/2]]);
+const angleMid=new Map(), angleSmall=new Map();
+
+groups.forEach(g=>{
+  const mids=midsByGroup.get(g)||[];
+  const start=anchorAngle.get(g)||0;
+  const span=Math.PI*0.9;
+  mids.forEach((m,i)=>{
+    const a = start + (i+1)/(mids.length+1)*span - span/2;
+    angleMid.set(g+'::'+m,a);
+    const smalls = smallsByMid.get(g+'::'+m)||[];
+    smalls.forEach((s,j)=>{
+      const aa = a + (((j+1)/(smalls.length+1))*(20*Math.PI/180) - (10*Math.PI/180));
+      angleSmall.set(g+'::'+m+'::'+s, aa);
+    });
+  });
+});
+
+const nodes=[]; const linksMain=[]; const pos=new Map();
+function addNode(id,kind,label,meta){ const o={id,kind,label,...(meta||{})}; nodes.push(o); return o; }
+function addLinkMain(a,b){ linksMain.push({source:a,target:b}); }
+
+groups.forEach(g=>{
+  const a=anchorAngle.get(g)||0;
+  const p={x:center.x+R.group*Math.cos(a), y:center.y+R.group*Math.sin(a)};
+  pos.set(g,p); addNode(g,'group',g,{big:g});
+});
+groups.forEach(g=>{
+  (midsByGroup.get(g)||[]).forEach(m=>{
+    const id=g+'::'+m;
+    const a=angleMid.get(g+'::'+m)||0;
+    const p={x:center.x+R.mid*Math.cos(a), y:center.y+R.mid*Math.sin(a)};
+    pos.set(id,p); addNode(id,'mid',m,{big:g,mid:m}); addLinkMain(g,id);
+    if(!isFlattened(g,m)){
+      const smalls=smallsByMid.get(g+'::'+m)||[];
+      smalls.forEach(s=>{
+        const sid=g+'::'+m+'::'+s;
+        const aa=angleSmall.get(sid)||a;
+        const sp={x:center.x+R.small*Math.cos(aa), y:center.y+R.small*Math.sin(aa)};
+        pos.set(sid,sp); addNode(sid,'small',s,{big:g,mid:m,small:s}); addLinkMain(id,sid);
+      });
+    }
+  });
+});
+
+D.forEach(r=>{
+  const docId='DOC-'+r.no;
+  const parentId = isFlattened(r.big,r.mid) ? (r.big+'::'+r.mid) : (r.small ? (r.big+'::'+r.mid+'::'+r.small) : (r.big+'::'+r.mid));
+  const baseA = isFlattened(r.big,r.mid) ? angleMid.get(r.big+'::'+r.mid)
+              : (r.small ? angleSmall.get(r.big+'::'+r.mid+'::'+r.small) : angleMid.get(r.big+'::'+r.mid));
+  const siblings = D.filter(x => x.big===r.big && x.mid===r.mid && (isFlattened(r.big,r.mid) || x.small===r.small));
+  const idx = siblings.findIndex(x=>x.no===r.no);
+  const spread = 12 * (Math.PI/180);
+  const offset = ((idx - (siblings.length-1)/2) / Math.max(1,(siblings.length))) * spread;
+  const a = (baseA||0) + offset;
+  const p={x:center.x+R.doc*Math.cos(a), y:center.y+R.doc*Math.sin(a)};
+  pos.set(docId,p);
+  addNode(docId,'doc',r.title,{big:r.big,mid:r.mid,small:r.small,title:r.title,url:r.url,no:r.no});
+  addLinkMain(parentId,docId);
+});
+
+/* ========= 보조링크(문서↔문서) ========= */
+function tagsFor(title){
+  const t=(title||'').toLowerCase();
+  const tags=[];
+  if(/가명|익명/.test(t)) tags.push('가명/익명');
+  if(/합성데이터/.test(t)) tags.push('합성데이터');
+  if(/마이데이터|전송요구권/.test(t)) tags.push('마이데이터');
+  if(/\bai\b|인공지능|프라이버시/.test(t)) tags.push('AI/프라이버시');
+  if(/클라우드/.test(t)) tags.push('클라우드');
+  if(/제로트러스트/.test(t)) tags.push('제로트러스트');
+  if(/공급망/.test(t)) tags.push('공급망');
+  if(/암호모듈|암호기술|암호/.test(t)) tags.push('암호/모듈');
+  if(/관제|siem|soar/.test(t)) tags.push('관제');
+  if(/망분리/.test(t)) tags.push('망분리');
+  if(/병원|보건|의료/.test(t)) tags.push('의료');
+  if(/교육/.test(t)) tags.push('교육');
+  if(/영상정보처리기기|영상/.test(t)) tags.push('영상');
+  if(/스마트도시/.test(t)) tags.push('스마트도시');
+  if(/isms/.test(t)) tags.push('ISMS');
+  if(/ciso|최고책임자/.test(t)) tags.push('CISO');
+  if(/컴플라이언스|참고서|이용 가이드/.test(t)) tags.push('컴플라이언스');
+  if(/오픈api/.test(t)) tags.push('오픈API');
+  if(/오픈소스|공개sw/.test(t)) tags.push('오픈소스');
+  if(/모바일/.test(t)) tags.push('모바일');
+  if(/거버넌스/.test(t)) tags.push('거버넌스');
+  return Array.from(new Set(tags));
+}
+const docs = nodes.filter(n=>n.kind==='doc');
+docs.forEach(d=>{ d.tags = tagsFor(d.label); });
+
+let linksAux=[]; // {source:docId,target:docId,tag}
+function rebuildAuxLinks(){
+  linksAux=[];
+  const byTag=new Map();
+  docs.forEach(d=>d.tags.forEach(tag=>{
+    if(!byTag.has(tag)) byTag.set(tag,[]);
+    byTag.get(tag).push(d);
+  }));
+  const maxPerDoc = parseInt(document.getElementById('auxCount').value,10);
+  const used = new Set(); // "a|b"
+  const countPerDoc = new Map(docs.map(d=>[d.id,0]));
+
+  byTag.forEach((list,tag)=>{
+    // 서로 다른 parent(중분류/소분류) 우선 연결
+    list.forEach(a=>{
+      if(countPerDoc.get(a.id)>=maxPerDoc) return;
+      // 후보: 같은 태그 & 다른 parentId
+      const parentA = parentOfDoc(a);
+      for(const b of list){
+        if(a.id===b.id) continue;
+        const key = a.id < b.id ? a.id+'|'+b.id : b.id+'|'+a.id;
+        if(used.has(key)) continue;
+        if(countPerDoc.get(a.id)>=maxPerDoc) break;
+        if(countPerDoc.get(b.id)>=maxPerDoc) continue;
+        const parentB = parentOfDoc(b);
+        if(parentA===parentB) continue; // 같은 묶음은 패스(너무 지저분)
+        used.add(key);
+        linksAux.push({source:a.id,target:b.id,tag:tag});
+        countPerDoc.set(a.id, countPerDoc.get(a.id)+1);
+        countPerDoc.set(b.id, countPerDoc.get(b.id)+1);
+      }
+    });
+  });
+}
+function parentOfDoc(d){
+  // 계층에서 문서 부모 id 계산(초기 로직과 동일)
+  const g=d.big, m=d.mid, s=d.small;
+  return (g==='개인정보보호' && m==='분야별 보호·안내') ? (g+'::'+m) : (s? (g+'::'+m+'::'+s) : (g+'::'+m));
+}
+rebuildAuxLinks();
+
+/* ========= 렌더링 ========= */
+function line(p1,p2,cls){
+  const el=document.createElementNS('http://www.w3.org/2000/svg','path');
+  el.setAttribute('class',cls||'link');
+  el.setAttribute('d','M'+p1.x+','+p1.y+' L'+p2.x+','+p2.y);
+  return el;
+}
+function nodeEl(n){
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g'); g.setAttribute('class','node '+n.kind); g.setAttribute('data-id',n.id);
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+  const r = n.kind==='group'?26 : n.kind==='mid'?20 : n.kind==='small'?14 : 10;
+  c.setAttribute('r',r); if(n.fixed) c.classList.add('pin');
+  const p=pos.get(n.id)||{x:center.x,y:center.y}; g.setAttribute('transform','translate('+p.x+','+p.y+')');
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('y', r+14); t.setAttribute('text-anchor','middle');
+  t.textContent = shorten(n.label||n.id, n.kind==='doc'?24 : n.kind==='mid'?12 : n.kind==='small'?10 : 14);
+  g.appendChild(c); g.appendChild(t);
+
+  g.addEventListener('mousemove', (e)=>{
+    const label = n.label || n.id;
+    tooltip.style.left = e.pageX+'px'; tooltip.style.top = e.pageY+'px'; tooltip.style.opacity=1;
+    const link = (n.kind==='doc' && n.url) ? '<a href="'+n.url+'" target="_blank" rel="noopener">관련 자료 보기</a>' : '';
+    tooltip.innerHTML = '<div class="t-title">'+esc(label)+'</div>'+link;
+    highlight(n.id,true);
+  });
+  g.addEventListener('mouseleave', ()=>{ tooltip.style.opacity=0; highlight(n.id,false); });
+
+  // 드래그(핀)
+  let dragging=false, offX=0, offY=0;
+  g.addEventListener('mousedown', (e)=>{
+    e.preventDefault(); dragging=true;
+    const p=pos.get(n.id); offX = e.clientX - p.x; offY = e.clientY - p.y;
+    n.fixed = true; // 핀 고정
+  });
+  window.addEventListener('mouseup', ()=>{ dragging=false; });
+  window.addEventListener('mousemove', (e)=>{
+    if(!dragging) return;
+    const x = e.clientX - offX, y = e.clientY - offY;
+    const p=pos.get(n.id)||{x:x,y:y}; p.x=x; p.y=y; pos.set(n.id,p);
+  });
+
+  g.addEventListener('dblclick', ()=>{ n.fixed = !n.fixed; }); // 고정 토글
+
+  g.addEventListener('click', ()=>{
+    if(n.kind==='doc'){
+      const warningMsg = '<div class="warning">⚠️ 실제 PDF 파일은 개인정보보호위원회 또는 관련 기관 웹사이트에서 확인하실 수 있습니다.</div>';
+      panel.innerHTML = '<h2>'+esc(n.label||n.id)+'</h2>' + 
+                       '<div class="meta">문서번호: '+n.no+'</div>' +
+                       '<div class="meta">대분류: '+n.big+'</div>' +
+                       '<div class="meta">중분류: '+n.mid+'</div>' +
+                       (n.small ? '<div class="meta">소분류: '+n.small+'</div>' : '') +
+                       warningMsg +
+                       (n.url?'<a class="open" href="'+n.url+'" target="_blank" rel="noopener">관련 자료실 보기</a>':'');
+    } else {
+      panel.innerHTML = '<h2>'+esc(n.label||n.id)+'</h2><div class="meta">'+(n.kind==='group'?'대분류': n.kind==='mid'?'중분류':'소분류')+'</div>';
+    }
+    focusTo(n.id);
+  });
+
+  return g;
+}
+
+// 주링크
+linksMain.forEach(l=>{
+  const p1=pos.get(l.source), p2=pos.get(l.target);
+  gLinksMain.appendChild(line(p1,p2,'link'));
+});
+// 보조링크
+function renderAux(){
+  gLinksAux.innerHTML='';
+  linksAux.forEach(l=>{
+    const p1=pos.get(l.source), p2=pos.get(l.target);
+    gLinksAux.appendChild(line(p1,p2,'aux'));
+  });
+}
+renderAux();
+
+// 노드
+nodes.forEach(n=>gNodes.appendChild(nodeEl(n)));
+
+/* ========= 인터랙션(하이라이트) ========= */
+function neighbors(id){
+  const set=new Set([id]);
+  linksMain.forEach(l=>{ if(l.source===id) set.add(l.target); if(l.target===id) set.add(l.source); });
+  return set;
+}
+function highlight(id,on){
+  const nb=neighbors(id);
+  const nbAux=new Set();
+  linksAux.forEach(l=>{
+    if(l.source===id || l.target===id){ nbAux.add(l.source); nbAux.add(l.target); }
+  });
+  [...gNodes.children].forEach(g=>{
+    const nid=g.getAttribute('data-id');
+    const isDocNeighbor = nb.has(nid) || nbAux.has(nid);
+    g.classList.toggle('dim', on && !isDocNeighbor);
+  });
+  // 메인 링크
+  [...gLinksMain.children].forEach((p,i)=>{
+    const L=linksMain[i];
+    const hit = (L.source===id || L.target===id);
+    p.style.opacity = on ? (hit? 0.95 : 0.08) : 1;
+    p.style.strokeWidth = on && hit ? 1.6 : 1.1;
+  });
+  // 보조 링크
+  [...gLinksAux.children].forEach((p,i)=>{
+    const L=linksAux[i];
+    const hit = (L.source===id || L.target===id);
+    p.style.opacity = on ? (hit? 0.9 : 0.15) : 0.28;
+    p.style.strokeWidth = on && hit ? 1.3 : 0.9;
+  });
+}
+function focusTo(id){
+  const p=pos.get(id);
+  const scale=Math.min(2, Math.max(1.2, view.k));
+  const tx = window.innerWidth/2 - p.x*scale;
+  const ty = window.innerHeight/2 - p.y*scale;
+  view = {k:scale, tx:tx, ty:ty};
+  applyView();
+}
+
+/* ========= 줌/팬 ========= */
+let view={k:1, tx:0, ty:0};
+function applyView(){ viewport.setAttribute('transform','translate('+view.tx+','+view.ty+') scale('+view.k+')'); }
+let dragging=false, sx=0, sy=0, stx=0, sty=0;
+svg.addEventListener('mousedown', e=>{ dragging=true; sx=e.clientX; sy=e.clientY; stx=view.tx; sty=view.ty; });
+window.addEventListener('mouseup', ()=>{ dragging=false; });
+window.addEventListener('mousemove', e=>{
+  if(!dragging) return;
+  const dx=e.clientX-sx, dy=e.clientY-sy;
+  view.tx = stx + dx; view.ty = sty + dy; applyView();
+});
+svg.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const x=e.offsetX, y=e.offsetY, nk=Math.max(0.5, Math.min(3, view.k*(e.deltaY>0?0.9:1.1)));
+  const cx=(x-view.tx)/view.k, cy=(y-view.ty)/view.k;
+  view.tx = x - cx*nk; view.ty = y - cy*nk; view.k = nk; applyView();
+},{passive:false});
+
+/* ========= 검색 ========= */
+const qEl=document.getElementById('q');
+qEl.addEventListener('keydown', (e)=>{
+  if(e.key!=='Enter') return;
+  const t=qEl.value.trim().toLowerCase();
+  const matched=new Set();
+  nodes.forEach(n=>{
+    const hay=((n.label||'')+' '+(n.mid||'')+' '+(n.small||'')).toLowerCase();
+    if(n.kind==='doc' && hay.includes(t)) matched.add(n.id);
+  });
+  [...gNodes.children].forEach(g=>{
+    const id=g.getAttribute('data-id'); const n=nodes.find(nn=>nn.id===id);
+    g.style.opacity = (!t)? 1 : (n.kind!=='doc'? 0.3 : (matched.has(id)? 1 : 0.08));
+  });
+  [...gLinksMain.children].forEach((p,i)=>{
+    const l=linksMain[i]; p.style.opacity = (!t)? 1 : (matched.has(l.target)? 0.85 : 0.05);
+  });
+  [...gLinksAux.children].forEach((p,i)=>{
+    const l=linksAux[i]; p.style.opacity = (!t)? 0.28 : ((matched.has(l.source)||matched.has(l.target))? 0.8 : 0.06);
+  });
+});
+
+/* ========= 유기적 레이아웃(간이 물리) ========= */
+const state=new Map(); // id -> {x,y,vx,vy}
+nodes.forEach(n=>{
+  const p=pos.get(n.id);
+  state.set(n.id,{x:p.x,y:p.y,vx:0,vy:0});
+});
+function restLenMain(a,b){
+  const sa = nodes.find(n=>n.id===a).kind;
+  const sb = nodes.find(n=>n.id===b).kind;
+  if(sa==='group' && sb==='mid') return 120;
+  if(sa==='mid' && sb==='small') return 120;
+  return 90; // small/doc, mid/doc
+}
+function restLenAux(){ return 180; } // 보조 링크는 길게 두어 살짝만 붙잡음
+
+let running=true;
+const toggleEl=document.getElementById('forceToggle');
+const strengthEl=document.getElementById('forceStrength');
+const auxToggle=document.getElementById('auxToggle');
+const auxStrengthEl=document.getElementById('auxStrength');
+const auxCountEl=document.getElementById('auxCount');
+const reheatBtn=document.getElementById('reheat');
+
+auxCountEl.addEventListener('change', ()=>{ rebuildAuxLinks(); renderAux(); });
+toggleEl.addEventListener('change', ()=>{ running = toggleEl.checked; if(running) tick(); });
+reheatBtn.addEventListener('click', ()=>{ state.forEach(s=>{ s.vx=0; s.vy=0; }); running = true; toggleEl.checked = true; tick(); });
+
+function tick(){
+  if(!running) return;
+  const ks = 0.002 + (parseInt(strengthEl.value,10)/100)*0.004; // 메인 스프링
+  const ksAux = (auxToggle.checked? 0.0004 : 0) + (parseInt(auxStrengthEl.value,10)/100)*0.0008; // 보조 스프링
+  const kr = 2000; // 반발(문서-문서)
+  const ka = 0.002; // 앵커 복원력
+  const drag = 0.92;
+
+  // 1) 메인 링크 스프링
+  linksMain.forEach(l=>{
+    const a=state.get(l.source), b=state.get(l.target);
+    const dx=b.x-a.x, dy=b.y-a.y;
+    const d=Math.max(1, Math.hypot(dx,dy));
+    const L=restLenMain(l.source,l.target);
+    const f = ks*(d-L);
+    const fx=f*dx/d, fy=f*dy/d;
+    if(!nodes.find(n=>n.id===l.source).fixed){ a.vx += fx; a.vy += fy; }
+    if(!nodes.find(n=>n.id===l.target).fixed){ b.vx -= fx; b.vy -= fy; }
+  });
+
+  // 2) 보조 링크 스프링(아주 약하게)
+  if(ksAux>0){
+    linksAux.forEach(l=>{
+      const a=state.get(l.source), b=state.get(l.target);
+      const dx=b.x-a.x, dy=b.y-a.y;
+      const d=Math.max(1, Math.hypot(dx,dy));
+      const L=restLenAux();
+      const f = ksAux*(d-L);
+      const fx=f*dx/d, fy=f*dy/d;
+      if(!nodes.find(n=>n.id===l.source).fixed){ a.vx += fx; a.vy += fy; }
+      if(!nodes.find(n=>n.id===l.target).fixed){ b.vx -= fx; b.vy -= fy; }
+    });
+  }
+
+  // 3) 반발 — 문서끼리만(가까울 때만)
+  for(let i=0;i<docs.length;i++){
+    const ni=docs[i]; const si=state.get(ni.id);
+    for(let j=i+1;j<docs.length;j++){
+      const nj=docs[j]; const sj=state.get(nj.id);
+      const dx=si.x-sj.x, dy=si.y-sj.y, d2=dx*dx+dy*dy; if(d2>180*180) continue;
+      const d=Math.max(1, Math.sqrt(d2));
+      const f=kr/(d2); const fx=f*dx/d, fy=f*dy/d;
+      if(!ni.fixed){ si.vx += fx; si.vy += fy; }
+      if(!nj.fixed){ sj.vx -= fx; sj.vy -= fy; }
+    }
+  }
+
+  // 4) 앵커 복원
+  nodes.forEach(n=>{
+    const s=state.get(n.id); const target=pos.get(n.id);
+    const dx=target.x - s.x, dy=target.y - s.y;
+    if(!n.fixed){ s.vx += ka*dx; s.vy += ka*dy; }
+  });
+
+  // 5) 적분 + 감쇠
+  state.forEach(s=>{ s.vx*=drag; s.vy*=drag; s.x+=s.vx; s.y+=s.vy; });
+
+  // 6) 화면 반영
+  // 메인 링크
+  [...gLinksMain.children].forEach((p,i)=>{
+    const l=linksMain[i]; const a=state.get(l.source), b=state.get(l.target);
+    p.setAttribute('d','M'+a.x+','+a.y+' L'+b.x+','+b.y);
+  });
+  // 보조 링크
+  [...gLinksAux.children].forEach((p,i)=>{
+    const l=linksAux[i]; const a=state.get(l.source), b=state.get(l.target);
+    p.setAttribute('d','M'+a.x+','+a.y+' L'+b.x+','+b.y);
+  });
+  // 노드
+  [...gNodes.children].forEach(g=>{
+    const id=g.getAttribute('data-id'); const s=state.get(id);
+    g.setAttribute('transform','translate('+s.x+','+s.y+')');
+  });
+
+  requestAnimationFrame(tick);
+}
+tick();
+
+/* ========= 유틸 ========= */
+function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function shorten(str,max){ if(!str) return ''; return str.length>max? str.slice(0,max-1)+'…' : str; }
+window.addEventListener('resize', ()=>{ 
+  // 화면 크기 변경 시 중앙 위치 재계산
+  center.x = window.innerWidth/2;
+  center.y = window.innerHeight/2;
+});
+
+</script>
+</body>
+</html>
